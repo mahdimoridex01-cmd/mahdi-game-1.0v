@@ -1,1462 +1,1066 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mahdi Game - منصة الألعاب الشاملة</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts (Cairo & Orbitron) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
-  
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              dark: '#0a0a12',
-              card: '#121225',
-              accent: '#8b5cf6',
-              cyan: '#06b6d4',
-              pink: '#ec4899',
-              gold: '#eab308'
-            }
-          },
-          fontFamily: {
-            cairo: ['Cairo', 'sans-serif'],
-            orbitron: ['Orbitron', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    body {
-      font-family: 'Cairo', sans-serif;
-      background-color: #06060c;
-      color: #f3f4f6;
-      user-select: none;
-      -webkit-user-select: none;
-      overflow-x: hidden;
-    }
-    .neon-text-purple {
-      text-shadow: 0 0 10px rgba(139, 92, 246, 0.7), 0 0 20px rgba(139, 92, 246, 0.4);
-    }
-    .neon-text-cyan {
-      text-shadow: 0 0 10px rgba(6, 182, 212, 0.7), 0 0 20px rgba(6, 182, 212, 0.4);
-    }
-    .neon-border {
-      box-shadow: 0 0 15px rgba(139, 92, 246, 0.25);
-    }
-    .neon-border:hover {
-      box-shadow: 0 0 25px rgba(6, 182, 212, 0.45);
-    }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0a0a12;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #232342;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #8b5cf6;
-    }
-    canvas {
-      touch-action: none;
-    }
-  </style>
-</head>
-<body class="min-h-screen flex flex-col bg-[#06060c] text-slate-100 font-cairo">
-
-  <!-- Header Navigation -->
-  <header class="sticky top-0 z-40 bg-[#0a0a18]/90 backdrop-blur-md border-b border-purple-900/40 px-4 lg:px-8 py-3">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-      
-      <!-- Brand Logo -->
-      <div class="flex items-center gap-3 cursor-pointer" onclick="showDashboard()">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-cyan-400 p-0.5 shadow-lg shadow-purple-500/30">
-          <div class="w-full h-full bg-[#0d0d1a] rounded-[10px] flex items-center justify-center">
-            <i class="fa-solid font-orbitron text-cyan-400 text-2xl font-bold">M</i>
-          </div>
-        </div>
-        <div>
-          <h1 class="text-2xl font-black tracking-wider font-orbitron bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-            MAHDI GAME
-          </h1>
-          <p class="text-xs text-cyan-400/80 tracking-widest uppercase font-semibold">منصة الألعاب الأوفلاين</p>
-        </div>
-      </div>
-
-      <!-- Search & Filters -->
-      <div class="flex-1 max-w-md mx-auto min-w-[240px]">
-        <div class="relative">
-          <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-purple-400"></i>
-          <input type="text" id="searchInput" oninput="filterGames()" placeholder="ابحث عن لعبة..." 
-            class="w-full bg-[#121226] text-sm text-white pl-4 pr-10 py-2.5 rounded-xl border border-purple-800/40 focus:border-cyan-400 focus:outline-none transition">
-        </div>
-      </div>
-
-      <!-- Quick Info / Status -->
-      <div class="hidden sm:flex items-center gap-3">
-        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          أوفلاين 100%
-        </span>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-bold">
-          <i class="fa-solid fa-gamepad"></i> 20 لعبة
-        </span>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- Category Tabs Header -->
-  <div class="bg-[#0b0b16] border-b border-purple-900/20 py-2.5 px-4 sticky top-[69px] z-30 shadow-md">
-    <div class="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar">
-      <button onclick="setCategory('all')" class="cat-btn active px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-purple-600 text-white">
-        <i class="fa-solid fa-border-all"></i> الكل (20)
-      </button>
-      <button onclick="setCategory('ai')" class="cat-btn px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-[#16162e] text-gray-300 hover:bg-purple-900/50">
-        <i class="fa-solid fa-robot text-cyan-400"></i> ضد البوت (AI)
-      </button>
-      <button onclick="setCategory('2p')" class="cat-btn px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-[#16162e] text-gray-300 hover:bg-purple-900/50">
-        <i class="fa-solid fa-user-friends text-pink-400"></i> لاعبين 2P
-      </button>
-      <button onclick="setCategory('arcade')" class="cat-btn px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap bg-[#16162e] text-gray-300 hover:bg-purple-900/50">
-        <i class="fa-solid fa-bolt text-yellow-400"></i> فردي / أركيد
-      </button>
-    </div>
-  </div>
-
-  <!-- Main Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mahdi offline v1.2</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     
-    <!-- DASHBOARD VIEW -->
-    <div id="dashboardView">
-      <div id="gamesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        <!-- Game Cards standard JS injection -->
-      </div>
-      <div id="noResults" class="hidden text-center py-16">
-        <i class="fa-solid fa-ghost text-5xl text-purple-500/40 mb-3"></i>
-        <p class="text-gray-400 font-bold">لم يتم العثور على ألعاب مطابقة لبحثك</p>
-      </div>
-    </div>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #0f172a;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --bg-canvas: #090d16;
+            --text-color: #f8fafc;
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
 
-    <!-- GAME PLAY CONTAINER VIEW -->
-    <div id="gameView" class="hidden flex-col items-center justify-center">
-      
-      <!-- Top Action Bar -->
-      <div class="w-full max-w-4xl flex items-center justify-between mb-4 bg-[#121226] p-3 rounded-2xl border border-purple-800/40">
-        <button onclick="showDashboard()" class="px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-red-900/30">
-          <i class="fa-solid fa-arrow-right"></i> القائمة الرئيسية
-        </button>
-        <div class="text-center">
-          <h2 id="currentGameTitle" class="text-lg md:text-xl font-bold font-orbitron text-cyan-400">اسم اللعبة</h2>
-          <span id="currentGameBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-purple-900/60 text-purple-200 border border-purple-500/30">نوع اللعبة</span>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-color);
+            user-select: none;
+            overflow: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* Dynamic Background Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glassmorphic Panels */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .theme-accent-bg {
+            background-color: var(--primary-color) !important;
+        }
+        .theme-accent-text {
+            color: var(--primary-color) !important;
+        }
+        .theme-accent-border {
+            border-color: var(--primary-color) !important;
+        }
+
+        /* Day / Night Animated Celestial Toggle */
+        .celestial-toggle {
+            position: relative;
+            width: 90px;
+            height: 42px;
+            border-radius: 25px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid var(--glass-border);
+        }
+
+        .celestial-toggle.day-mode {
+            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+        }
+
+        .celestial-toggle.night-mode {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Windows Taskbar */
+        .taskbar {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        /* Logo M Button */
+        .m-logo-btn {
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            box-shadow: 0 0 15px var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .m-logo-btn:hover {
+            transform: scale(1.1) rotate(6deg);
+            box-shadow: 0 0 25px var(--accent-glow);
+        }
+
+        /* Desktop App Icon */
+        .desktop-icon {
+            transition: all 0.25s ease;
+        }
+        .desktop-icon:hover {
+            transform: translateY(-6px) scale(1.05);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        /* Cloud Animation for Day Mode */
+        @keyframes floatCloud {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+        .animate-cloud {
+            animation: floatCloud 8s linear infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative select-none">
+
+    <!-- Interactive Background Particles Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Top OS Bar / Header -->
+    <header class="relative z-20 px-6 py-3 flex items-center justify-between glass-panel mx-4 mt-4 rounded-2xl">
+        <!-- Brand Title -->
+        <div class="flex items-center gap-3">
+            <div class="m-logo-btn w-10 h-10 rounded-xl flex items-center justify-center font-black text-2xl text-white shadow-lg cursor-pointer" onclick="toggleStartMenu()">
+                M
+            </div>
+            <div>
+                <h1 class="font-black text-lg tracking-wider bg-gradient-to-r from-blue-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">mahdi offline</h1>
+                <p class="text-[10px] opacity-70">نظام التشغيل المحلي v1.2</p>
+            </div>
         </div>
-        <button onclick="restartCurrentGame()" class="px-3.5 py-2 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
-          <i class="fa-solid fa-rotate-right"></i> إعادت اللعبة
-        </button>
-      </div>
 
-      <!-- Game Stage Box -->
-      <div class="w-full max-w-4xl bg-[#101021] border border-purple-500/30 rounded-2xl overflow-hidden shadow-2xl relative min-h-[480px] flex flex-col items-center justify-center p-2 sm:p-4">
-        <div id="gameCanvasContainer" class="w-full h-full flex flex-col items-center justify-center relative">
-          <!-- Dynamic Game Elements Injected Here -->
-        </div>
-      </div>
+        <!-- System Controls: Dynamic Celestial Day/Night & Unlimited Color Picker -->
+        <div class="flex items-center gap-4">
 
-      <!-- Instructions & Mobile Controls Hint -->
-      <div id="gameControlsDesc" class="w-full max-w-4xl mt-4 bg-[#121226]/60 p-4 rounded-xl border border-purple-900/30 text-xs text-gray-300 leading-relaxed flex items-center gap-3">
-        <i class="fa-solid fa-circle-info text-cyan-400 text-lg"></i>
-        <span id="instructionsText">تعليمات اللعب تظهر هنا...</span>
-      </div>
-
-    </div>
-
-  </main>
-
-  <!-- Footer -->
-  <footer class="mt-auto bg-[#070712] border-t border-purple-900/30 py-4 text-center text-xs text-gray-500">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <p class="font-orbitron font-bold text-gray-400">MAHDI GAME &copy; 2026 - جميع الحقوق محفوظة</p>
-      <p class="text-purple-400/80">منصة ألعاب بدون إنترنت | ألعاب ذكاء وتحدي</p>
-    </div>
-  </footer>
-
-  <!-- JAVASCRIPT LOGIC -->
-  <script>
-    // --- GAMES DEFINITION DATABASE ---
-    const GAMES = [
-      { id: 'xo', title: 'إكس أو (Tic-Tac-Toe)', category: 'ai', icon: 'fa-xmark', color: 'from-purple-600 to-indigo-600', badge: 'VS AI / 2P', desc: 'لعبة X-O الشهيرة. العب ضد الذكاء الاصطناعي الذكي أو مع صديقك.' },
-      { id: 'pong', title: 'بونج الكلاسيكية (Pong)', category: '2p', icon: 'fa-table-tennis-paddle-ball', color: 'from-cyan-600 to-blue-600', badge: 'VS AI / 2P', desc: 'كرة الطاولة الكلاسيكية. تحكم بخصمك واستمتع بسرعة التحدي.' },
-      { id: 'connect4', title: 'أربعة على خط (Connect 4)', category: 'ai', icon: 'fa-circle-dot', color: 'from-pink-600 to-rose-600', badge: 'VS AI / 2P', desc: 'أسقط أقراصك الملونة وشكل صفاً من 4 قطع متتالية للفوز.' },
-      { id: 'snake', title: 'لعبة الثعبان (Snake)', category: 'arcade', icon: 'fa-staff-snake', color: 'from-emerald-600 to-teal-600', badge: 'Arcade', desc: 'الجم ثعبانك واجمع الطعام دون الاصطدام بالجدران أو الذيل.' },
-      { id: 'galaga', title: 'حرب الفضاء (Space Shooter)', category: 'arcade', icon: 'fa-shuttle-space', color: 'from-purple-600 to-pink-600', badge: 'Arcade', desc: 'دمر أسراب المركبات الفضائية المعادية واحمِ مركبتك.' },
-      { id: 'memory', title: 'مطابقة الذاكرة (Memory)', category: 'arcade', icon: 'fa-brain', color: 'from-amber-600 to-orange-600', badge: 'Arcade', desc: 'اختبر قوة ذاكرتك واكتشف الأوراق المتشابهة بأقل المحاولات.' },
-      { id: 'brick', title: 'تكسير الطوب (Brick Breaker)', category: 'arcade', icon: 'fa-cubes-stacked', color: 'from-blue-600 to-indigo-600', badge: 'Arcade', desc: 'وجه الكرة وحطم جدار الطوب بالكامل باستخدام المضرب.' },
-      { id: 'flappy', title: 'الطائر القافز (Flappy Bird)', category: 'arcade', icon: 'fa-dove', color: 'from-yellow-500 to-emerald-600', badge: 'Arcade', desc: 'انقر للتحليق والمرور من بين الأنابيب بدون اصطدام.' },
-      { id: 'reaction', title: 'اختبار سرعة رد الفعل', category: 'arcade', icon: 'fa-bolt-lightning', color: 'from-red-600 to-orange-600', badge: 'Arcade', desc: 'انتظر الإشارة الخضراء وانقر بأسرع ما لديك لقياس رد فعلك.' },
-      { id: 'simon', title: 'لعبة الألوان (Simon Says)', category: 'arcade', icon: 'fa-[#0d0d1a] fa-lightbulb', color: 'from-teal-600 to-emerald-600', badge: 'Arcade', desc: 'تذكر نمط الألوان المضيئة وكرر التسلسل بشكل صحيح.' },
-      { id: 'puzzle2048', title: 'لعبة 2048', category: 'arcade', icon: 'fa-border-all', color: 'from-amber-500 to-red-600', badge: 'Arcade', desc: 'ادمج الأرقام المتطابقة حتى تصل إلى المربع 2048.' },
-      { id: 'rps', title: 'حجرة ورقة مقص Spock', category: 'ai', icon: 'fa-hand-back-fist', color: 'from-fuchsia-600 to-purple-600', badge: 'VS AI', desc: 'تحدى الذكاء الاصطناعي في النسخة المباشرة والسريعة.' },
-      { id: 'whack', title: 'صيد الأهداف (Whack Mole)', category: 'arcade', icon: 'fa-bullseye', color: 'from-green-600 to-emerald-600', badge: 'Arcade', desc: 'اضغط على الأهداف الظاهرة بأسرع سرعة قبل اختفائها.' },
-      { id: 'dino', title: 'الركض والقفز (Dino Jump)', category: 'arcade', icon: 'fa-person-running', color: 'from-cyan-600 to-teal-600', badge: 'Arcade', desc: 'اقفز فوق العقبات في الوقت المناسب وواصل الجري.' },
-      { id: 'penalty', title: 'ركلات الترجيح (Penalty)', category: 'ai', icon: 'fa-futbol', color: 'from-emerald-600 to-green-700', badge: 'VS AI', desc: 'سدد الكرة على المرمى وتغلب على حارس المرمى الذكي.' },
-      { id: 'colorswitch', title: 'تفادي الألوان (Color Dodge)', category: 'arcade', icon: 'fa-palette', color: 'from-purple-600 to-pink-500', badge: 'Arcade', desc: 'تحكم بالكرة وتفادى العوائق التي تختلف عن لونك.' },
-      { id: 'aim', title: 'تدريب التصويب (Aim Trainer)', category: 'arcade', icon: 'fa-crosshair', color: 'from-red-600 to-rose-600', badge: 'Arcade', desc: 'دمر الدوائر المتساقطة لزيادة دقة وسرعة تصويبك.' },
-      { id: 'math', title: 'تحدي الحساب السريع', category: 'arcade', icon: 'fa-calculator', color: 'from-indigo-600 to-blue-600', badge: 'Arcade', desc: 'حل أكبر عدد من المسائل الرياضية قبل انتهاء الوقت.' },
-      { id: 'xo4', title: 'إكس أو العملاقة 4x4', category: 'ai', icon: 'fa-table-cells', color: 'from-violet-600 to-purple-800', badge: 'VS AI / 2P', desc: 'تحدي استراتيجي موسع في شبكة 4x4 لتوصيل 4 علامات.' },
-      { id: 'car', title: 'سباق السيارات (Dodge Cars)', category: 'arcade', icon: 'fa-car-side', color: 'from-rose-600 to-red-600', badge: 'Arcade', desc: 'قد سيارتك وتفادى السيارات الآتية في الطريق السريع.' }
-    ];
-
-    let currentCategory = 'all';
-    let currentGameId = null;
-    let activeGameLoop = null;
-
-    // --- INITIALIZATION ---
-    window.onload = () => {
-      renderGamesList();
-    };
-
-    function renderGamesList() {
-      const grid = document.getElementById('gamesGrid');
-      const searchVal = document.getElementById('searchInput').value.toLowerCase();
-      grid.innerHTML = '';
-      let count = 0;
-
-      GAMES.forEach(game => {
-        const matchesCategory = (currentCategory === 'all') || 
-                                (currentCategory === 'ai' && game.category === 'ai') ||
-                                (currentCategory === '2p' && (game.category === '2p' || game.badge.includes('2P'))) ||
-                                (currentCategory === 'arcade' && game.category === 'arcade');
-
-        const matchesSearch = game.title.toLowerCase().includes(searchVal) || game.desc.toLowerCase().includes(searchVal);
-
-        if (matchesCategory && matchesSearch) {
-          count++;
-          const card = document.createElement('div');
-          card.className = "bg-[#111124] border border-purple-900/30 rounded-2xl overflow-hidden hover:border-cyan-400/60 transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between shadow-lg group neon-border";
-          
-          card.innerHTML = `
-            <div class="p-5">
-              <div class="flex items-start justify-between gap-2 mb-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${game.color} flex items-center justify-center text-white text-xl shadow-md">
-                  <i class="fa-solid ${game.icon}"></i>
+            <!-- Day / Night Dynamic Celestial Toggle Switch -->
+            <div id="celestialToggle" onclick="toggleDayNightMode()" class="celestial-toggle night-mode p-1 flex items-center justify-between relative">
+                <!-- Day Scene (Sun & Sky) -->
+                <div id="dayScene" class="absolute inset-0 flex items-center justify-between px-2 opacity-0 transition-opacity duration-500 pointer-events-none">
+                    <i class="fa-solid fa-cloud text-white/80 text-xs animate-cloud"></i>
+                    <div class="w-7 h-7 rounded-full bg-amber-300 shadow-md flex items-center justify-center text-amber-950 text-xs font-bold">
+                        <i class="fa-solid fa-sun animate-spin-slow"></i>
+                    </div>
                 </div>
-                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-950 text-cyan-300 border border-purple-800/50">
-                  ${game.badge}
-                </span>
-              </div>
-              <h3 class="font-bold text-base text-gray-100 group-hover:text-cyan-400 transition-colors mb-1 font-orbitron">${game.title}</h3>
-              <p class="text-xs text-gray-400 leading-relaxed line-clamp-2">${game.desc}</p>
+
+                <!-- Night Scene (Moon & Stars) -->
+                <div id="nightScene" class="absolute inset-0 flex items-center justify-between px-2 opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div class="w-7 h-7 rounded-full bg-indigo-950 border border-indigo-400/30 flex items-center justify-center text-indigo-200 text-xs font-bold shadow-md">
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
+                    <div class="flex gap-1 text-[9px] text-amber-200/80">
+                        <i class="fa-solid fa-star animate-pulse"></i>
+                        <i class="fa-solid fa-star text-[7px]"></i>
+                    </div>
+                </div>
             </div>
-            <div class="p-4 pt-0">
-              <button onclick="launchGame('${game.id}')" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-md">
-                <i class="fa-solid fa-play"></i> ابدأ اللعب
-              </button>
+
+            <!-- Custom Full-Spectrum Color Customization -->
+            <div class="relative">
+                <button onclick="toggleThemeModal()" class="glass-panel px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 hover:bg-white/10 transition-all">
+                    <i class="fa-solid fa-palette text-pink-400 text-sm"></i>
+                    <span>تخصيص الألوان</span>
+                </button>
             </div>
-          `;
-          grid.appendChild(card);
-        }
-      });
-
-      document.getElementById('noResults').classList.toggle('hidden', count > 0);
-    }
-
-    function setCategory(cat) {
-      currentCategory = cat;
-      document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.classList.remove('bg-purple-600', 'text-white');
-        btn.classList.add('bg-[#16162e]', 'text-gray-300');
-      });
-      event.currentTarget.classList.remove('bg-[#16162e]', 'text-gray-300');
-      event.currentTarget.classList.add('bg-purple-600', 'text-white');
-      renderGamesList();
-    }
-
-    function filterGames() {
-      renderGamesList();
-    }
-
-    function showDashboard() {
-      if (activeGameLoop) clearInterval(activeGameLoop);
-      document.getElementById('gameView').classList.add('hidden');
-      document.getElementById('gameView').classList.remove('flex');
-      document.getElementById('dashboardView').classList.remove('hidden');
-      document.getElementById('gameCanvasContainer').innerHTML = '';
-      currentGameId = null;
-    }
-
-    function launchGame(id) {
-      if (activeGameLoop) clearInterval(activeGameLoop);
-      const game = GAMES.find(g => g.id === id);
-      if (!game) return;
-
-      currentGameId = id;
-      document.getElementById('dashboardView').classList.add('hidden');
-      document.getElementById('gameView').classList.remove('hidden');
-      document.getElementById('gameView').classList.add('flex');
-      document.getElementById('currentGameTitle').innerText = game.title;
-      document.getElementById('currentGameBadge').innerText = game.badge;
-
-      const container = document.getElementById('gameCanvasContainer');
-      container.innerHTML = ''; // reset
-
-      // Launch corresponding engine
-      switch (id) {
-        case 'xo': initXO(container, 3); break;
-        case 'xo4': initXO(container, 4); break;
-        case 'pong': initPong(container); break;
-        case 'connect4': initConnect4(container); break;
-        case 'snake': initSnake(container); break;
-        case 'galaga': initGalaga(container); break;
-        case 'memory': initMemory(container); break;
-        case 'brick': initBrick(container); break;
-        case 'flappy': initFlappy(container); break;
-        case 'reaction': initReaction(container); break;
-        case 'simon': initSimon(container); break;
-        case 'puzzle2048': init2048(container); break;
-        case 'rps': initRPS(container); break;
-        case 'whack': initWhack(container); break;
-        case 'dino': initDino(container); break;
-        case 'penalty': initPenalty(container); break;
-        case 'colorswitch': initColorSwitch(container); break;
-        case 'aim': initAimTrainer(container); break;
-        case 'math': initMath(container); break;
-        case 'car': initCarRace(container); break;
-        default: container.innerHTML = '<p class="text-red-400 font-bold">اللعبة قيد التطوير!</p>';
-      }
-    }
-
-    function restartCurrentGame() {
-      if (currentGameId) launchGame(currentGameId);
-    }
-
-
-    // =========================================================================
-    // 1. GAME 1 & 19: TIC TAC TOE (3x3 & 4x4)
-    // =========================================================================
-    function initXO(container, size = 3) {
-      document.getElementById('instructionsText').innerText = `انقر على المربعات لوضع علامتك. نمط 1 Player يعتمد على الذكاء الاصطناعي، ويمكن التبديل لنمط لاعبين 2P.`;
-      let mode = 'ai'; // 'ai' or '2p'
-      let board = Array(size * size).fill(null);
-      let turn = 'X';
-      let gameOver = false;
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'flex flex-col items-center gap-4 w-full max-w-sm';
-      
-      wrapper.innerHTML = `
-        <div class="flex gap-2 mb-2">
-          <button id="xoAiBtn" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 text-white">ضد البوت AI</button>
-          <button id="xo2pBtn" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-gray-300">لاعبين 2P</button>
         </div>
-        <div id="xoStatus" class="text-sm font-bold text-purple-300">دور اللاعب: X</div>
-        <div id="xoGrid" class="grid grid-cols-${size} gap-2 w-full aspect-square bg-[#1a1a36] p-3 rounded-2xl border border-purple-800/50"></div>
-      `;
-      container.appendChild(wrapper);
+    </header>
 
-      const statusEl = wrapper.querySelector('#xoStatus');
-      const gridEl = wrapper.querySelector('#xoGrid');
-      gridEl.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+    <!-- Desktop Workspace -->
+    <main class="relative z-10 flex-1 p-8 flex flex-col justify-start items-start">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-sm">
+            <!-- Desktop Application: Mahdi Games -->
+            <div onclick="openApp('games')" class="desktop-icon glass-panel p-5 rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer border border-white/10 group">
+                <div class="w-16 h-16 rounded-2xl theme-accent-bg flex items-center justify-center text-white text-3xl shadow-xl mb-3 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+                <h3 class="font-black text-sm tracking-wide">تطبيق الألعاب</h3>
+                <p class="text-[10px] opacity-60 mt-1">Mahdi Games Engine</p>
+            </div>
+        </div>
+    </main>
 
-      wrapper.querySelector('#xoAiBtn').onclick = () => { mode = 'ai'; resetXO(); };
-      wrapper.querySelector('#xo2pBtn').onclick = () => { mode = '2p'; resetXO(); };
+    <!-- Start Menu Drawer -->
+    <div id="startMenu" class="hidden absolute bottom-16 right-6 z-50 w-80 glass-panel rounded-3xl p-4 shadow-2xl border border-white/20">
+        <div class="flex items-center gap-3 pb-3 border-b border-white/10 mb-3">
+            <div class="w-12 h-12 m-logo-btn rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-md">
+                M
+            </div>
+            <div>
+                <h3 class="font-bold text-sm">mahdi offline OS</h3>
+                <p class="text-xs opacity-60">تطبيقات النظام المحلية</p>
+            </div>
+        </div>
+        <div class="space-y-2 text-xs font-medium">
+            <button onclick="openApp('games')" class="w-full text-right p-3 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-all">
+                <i class="fa-solid fa-gamepad text-blue-400 text-lg"></i>
+                <div>
+                    <div class="font-bold">تطبيق الألعاب (Mahdi Games)</div>
+                    <div class="text-[10px] opacity-60">تطبيق الألعاب والأرقام القياسية</div>
+                </div>
+            </button>
+        </div>
+    </div>
 
-      function renderGrid() {
-        gridEl.innerHTML = '';
-        board.forEach((cell, idx) => {
-          const btn = document.createElement('button');
-          btn.className = `w-full h-full text-2xl sm:text-3xl font-black rounded-xl border border-purple-800/40 bg-[#121226] hover:bg-purple-900/30 flex items-center justify-center transition ${cell === 'X' ? 'text-cyan-400' : 'text-pink-400'}`;
-          btn.innerText = cell || '';
-          btn.onclick = () => handleMove(idx);
-          gridEl.appendChild(btn);
-        });
-      }
+    <!-- Windows Taskbar -->
+    <footer class="relative z-30 taskbar h-14 px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleStartMenu()" class="m-logo-btn w-9 h-9 rounded-xl flex items-center justify-center font-black text-xl text-white shadow-lg">
+                M
+            </button>
+            <span class="text-xs font-bold opacity-80 tracking-wider">mahdi offline</span>
+        </div>
 
-      function handleMove(idx) {
-        if (board[idx] || gameOver) return;
-        board[idx] = turn;
-        renderGrid();
+        <div class="flex items-center gap-2 text-xs font-bold opacity-80 glass-panel px-3 py-1.5 rounded-xl">
+            <i class="fa-regular fa-clock text-blue-400"></i>
+            <span id="osClock">00:00:00</span>
+        </div>
+    </footer>
 
-        if (checkWin(board, turn, size)) {
-          statusEl.innerText = `الفائز هو اللاعب ${turn}! 🎉`;
-          gameOver = true;
-          return;
-        }
+    <!-- Color Picker Modal -->
+    <div id="themeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-white/20 shadow-2xl">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                <h3 class="font-black text-base flex items-center gap-2">
+                    <i class="fa-solid fa-droplet text-pink-400"></i>
+                    تخصيص ألوان النظام بالكامل
+                </h3>
+                <button onclick="toggleThemeModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
 
-        if (board.every(c => c !== null)) {
-          statusEl.innerText = `تعادل! 🤝`;
-          gameOver = true;
-          return;
-        }
-
-        turn = turn === 'X' ? 'O' : 'X';
-        statusEl.innerText = `دور اللاعب: ${turn}`;
-
-        if (mode === 'ai' && turn === 'O' && !gameOver) {
-          setTimeout(aiMove, 300);
-        }
-      }
-
-      function aiMove() {
-        let emptyIndices = board.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
-        if (emptyIndices.length === 0 || gameOver) return;
-        
-        // Simple Smart AI check
-        let chosen = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-        handleMove(chosen);
-      }
-
-      function checkWin(b, p, s) {
-        // Rows & Cols
-        for (let i = 0; i < s; i++) {
-          let rowWin = true, colWin = true;
-          for (let j = 0; j < s; j++) {
-            if (b[i * s + j] !== p) rowWin = false;
-            if (b[j * s + i] !== p) colWin = false;
-          }
-          if (rowWin || colWin) return true;
-        }
-        // Diagonals
-        let diag1 = true, diag2 = true;
-        for (let i = 0; i < s; i++) {
-          if (b[i * s + i] !== p) diag1 = false;
-          if (b[i * s + (s - 1 - i)] !== p) diag2 = false;
-        }
-        return diag1 || diag2;
-      }
-
-      function resetXO() {
-        board = Array(size * size).fill(null);
-        turn = 'X';
-        gameOver = false;
-        statusEl.innerText = `دور اللاعب: X`;
-        renderGrid();
-      }
-
-      renderGrid();
-    }
-
-
-    // =========================================================================
-    // 2. GAME 2: PONG / AIR HOCKEY
-    // =========================================================================
-    function initPong(container) {
-      document.getElementById('instructionsText').innerText = `اللاعب 1: مفاتيح W/S أو اللمس. اللاعب 2 / AI: أسهم الأسرار Up/Down.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 600;
-      canvas.height = 360;
-      canvas.className = "w-full max-w-xl rounded-xl border border-purple-800 bg-[#080814] shadow-lg";
-      container.appendChild(canvas);
-
-      const ctx = canvas.getContext('2d');
-      let paddleH = 70, paddleW = 10;
-      let p1Y = (canvas.height - paddleH) / 2;
-      let p2Y = (canvas.height - paddleH) / 2;
-      let ballX = canvas.width / 2, ballY = canvas.height / 2;
-      let ballSpeedX = 4, ballSpeedY = 3;
-      let p1Score = 0, p2Score = 0;
-      let keys = {};
-
-      window.onkeydown = e => keys[e.key] = true;
-      window.onkeyup = e => keys[e.key] = false;
-
-      // Mobile touch support
-      canvas.addEventListener('touchmove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const touchY = e.touches[0].clientY - rect.top;
-        p1Y = touchY - paddleH / 2;
-      });
-
-      activeGameLoop = setInterval(() => {
-        // Move P1
-        if (keys['w'] || keys['W']) p1Y = Math.max(0, p1Y - 5);
-        if (keys['s'] || keys['S']) p1Y = Math.min(canvas.height - paddleH, p1Y + 5);
-
-        // Move P2 (AI)
-        if (ballY > p2Y + paddleH / 2) p2Y = Math.min(canvas.height - paddleH, p2Y + 3.8);
-        else p2Y = Math.max(0, p2Y - 3.8);
-
-        // Move Ball
-        ballX += ballSpeedX;
-        ballY += ballSpeedY;
-
-        // Wall collisions
-        if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
-
-        // Paddle collisions
-        if (ballX <= paddleW + 10 && ballY >= p1Y && ballY <= p1Y + paddleH) {
-          ballSpeedX = -ballSpeedX * 1.05;
-        }
-        if (ballX >= canvas.width - paddleW - 10 && ballY >= p2Y && ballY <= p2Y + paddleH) {
-          ballSpeedX = -ballSpeedX * 1.05;
-        }
-
-        // Score
-        if (ballX < 0) { p2Score++; resetBall(); }
-        if (ballX > canvas.width) { p1Score++; resetBall(); }
-
-        // Draw
-        ctx.fillStyle = '#080814';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Net
-        ctx.strokeStyle = '#222244';
-        ctx.setLineDash([6, 6]);
-        ctx.beginPath();
-        ctx.moveTo(canvas.width / 2, 0);
-        ctx.lineTo(canvas.width / 2, canvas.height);
-        ctx.stroke();
-
-        // Paddles
-        ctx.fillStyle = '#06b6d4'; // P1 Cyan
-        ctx.fillRect(10, p1Y, paddleW, paddleH);
-        ctx.fillStyle = '#ec4899'; // P2 Pink
-        ctx.fillRect(canvas.width - paddleW - 10, p2Y, paddleW, paddleH);
-
-        // Ball
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(ballX, ballY, 7, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Scores
-        ctx.font = '20px Orbitron';
-        ctx.fillText(p1Score, canvas.width / 4, 35);
-        ctx.fillText(p2Score, (3 * canvas.width) / 4, 35);
-
-      }, 1000 / 60);
-
-      function resetBall() {
-        ballX = canvas.width / 2;
-        ballY = canvas.height / 2;
-        ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * 4;
-        ballSpeedY = (Math.random() > 0.5 ? 1 : -1) * 3;
-      }
-    }
-
-
-    // =========================================================================
-    // 3. GAME 3: CONNECT 4
-    // =========================================================================
-    function initConnect4(container) {
-      document.getElementById('instructionsText').innerText = `انقر على العمود لأسقاط القرص الخاص بك. شكل 4 أقراص متتالية أفقياً أو عمودياً أو قطرياً.`;
-      
-      const ROWS = 6, COLS = 7;
-      let grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
-      let turn = 1; // 1: Red (Player), 2: Yellow (AI)
-      let gameOver = false;
-
-      const wrapper = document.createElement('div');
-      wrapper.className = "flex flex-col items-center gap-3";
-      wrapper.innerHTML = `
-        <div id="c4Status" class="text-sm font-bold text-cyan-400">دور اللاعب (الأحمر)</div>
-        <div id="c4Board" class="grid grid-cols-7 gap-1.5 bg-[#181836] p-3 rounded-2xl border border-purple-800"></div>
-      `;
-      container.appendChild(wrapper);
-
-      const boardEl = wrapper.querySelector('#c4Board');
-      const statusEl = wrapper.querySelector('#c4Status');
-
-      function render() {
-        boardEl.innerHTML = '';
-        for (let r = 0; r < ROWS; r++) {
-          for (let c = 0; c < COLS; c++) {
-            const cell = document.createElement('div');
-            const val = grid[r][c];
-            cell.className = `w-10 h-10 sm:w-12 sm:h-12 rounded-full cursor-pointer transition flex items-center justify-center ${val === 0 ? 'bg-[#0a0a1a]' : val === 1 ? 'bg-rose-500 shadow-md shadow-rose-500/50' : 'bg-amber-400 shadow-md shadow-amber-400/50'}`;
-            cell.onclick = () => dropDisc(c);
-            boardEl.appendChild(cell);
-          }
-        }
-      }
-
-      function dropDisc(c) {
-        if (gameOver) return;
-        for (let r = ROWS - 1; r >= 0; r--) {
-          if (grid[r][c] === 0) {
-            grid[r][c] = turn;
-            render();
-            if (checkWin(r, c)) {
-              statusEl.innerText = `🎉 الفائز هو ${turn === 1 ? 'اللاعب الأحمر' : 'البوت الأصفر'}!`;
-              gameOver = true;
-              return;
-            }
-            turn = turn === 1 ? 2 : 1;
-            statusEl.innerText = turn === 1 ? 'دور اللاعب (الأحمر)' : 'دور البوت (الأصفر)...';
+            <div class="space-y-4 text-xs font-bold">
+                <div>
+                    <label class="block mb-2">اللون الرئيسي (Primary Accent Color):</label>
+                    <input type="color" id="primaryColorInput" value="#3b82f6" onchange="updateCustomColors()" class="w-full h-10 rounded-xl cursor-pointer bg-transparent border-none">
+                </div>
+                <div>
+                    <label class="block mb-2">لون الخلفية (Background Color):</label>
+                    <input type="color" id="bgColorInput" value="#090d16" onchange="updateCustomColors()" class="w-full h-10 rounded-xl cursor-pointer bg-transparent border-none">
+                </div>
+                <div>
+                    <label class="block mb-2">لون النص (Text Color):</label>
+                    <input type="color" id="textColorInput" value="#f8fafc" onchange="updateCustomColors()" class="w-full h-10 rounded-xl cursor-pointer bg-transparent border-none">
+                </div>
+            </div>
             
-            if (turn === 2 && !gameOver) {
-              setTimeout(aiDrop, 400);
-            }
-            return;
-          }
-        }
-      }
-
-      function aiDrop() {
-        let validCols = [];
-        for (let c = 0; c < COLS; c++) {
-          if (grid[0][c] === 0) validCols.push(c);
-        }
-        if (validCols.length > 0) {
-          let chosen = validCols[Math.floor(Math.random() * validCols.length)];
-          dropDisc(chosen);
-        }
-      }
-
-      function checkWin(r, c) {
-        const val = grid[r][c];
-        const count = (dx, dy) => {
-          let cnt = 0, x = r + dx, y = c + dy;
-          while (x >= 0 && x < ROWS && y >= 0 && y < COLS && grid[x][y] === val) {
-            cnt++; x += dx; y += dy;
-          }
-          return cnt;
-        };
-        return (count(1,0)+count(-1,0)>=3) || (count(0,1)+count(0,-1)>=3) || (count(1,1)+count(-1,-1)>=3) || (count(1,-1)+count(-1,1)>=3);
-      }
-
-      render();
-    }
-
-
-    // =========================================================================
-    // 4. GAME 4: SNAKE CLASSIC
-    // =========================================================================
-    function initSnake(container) {
-      document.getElementById('instructionsText').innerText = `استخدم الأسهم أو أزرار الاتجاهات للتحكم بالثعبان واجمع النقاط الحمراء.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 360;
-      canvas.height = 360;
-      canvas.className = "rounded-xl border border-purple-800 bg-[#0a0a18]";
-
-      const controls = document.createElement('div');
-      controls.className = "grid grid-cols-3 gap-2 mt-3 w-44";
-      controls.innerHTML = `
-        <div></div><button id="sUp" class="py-2 bg-purple-900/60 rounded-lg text-white font-bold"><i class="fa-solid fa-arrow-up"></i></button><div></div>
-        <button id="sLeft" class="py-2 bg-purple-900/60 rounded-lg text-white font-bold"><i class="fa-solid fa-arrow-left"></i></button>
-        <button id="sDown" class="py-2 bg-purple-900/60 rounded-lg text-white font-bold"><i class="fa-solid fa-arrow-down"></i></button>
-        <button id="sRight" class="py-2 bg-purple-900/60 rounded-lg text-white font-bold"><i class="fa-solid fa-arrow-right"></i></button>
-      `;
-
-      container.appendChild(canvas);
-      container.appendChild(controls);
-
-      const ctx = canvas.getContext('2d');
-      const grid = 18;
-      let snake = [{x: 5, y: 5}];
-      let food = {x: 12, y: 12};
-      let dx = 1, dy = 0;
-      let score = 0;
-
-      window.onkeydown = e => {
-        if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -1; }
-        if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = 1; }
-        if (e.key === 'ArrowLeft' && dx === 0) { dx = -1; dy = 0; }
-        if (e.key === 'ArrowRight' && dx === 0) { dx = 1; dy = 0; }
-      };
-
-      controls.querySelector('#sUp').onclick = () => { if (dy===0){dx=0;dy=-1;} };
-      controls.querySelector('#sDown').onclick = () => { if (dy===0){dx=0;dy=1;} };
-      controls.querySelector('#sLeft').onclick = () => { if (dx===0){dx=-1;dy=0;} };
-      controls.querySelector('#sRight').onclick = () => { if (dx===0){dx=1;dy=0;} };
-
-      activeGameLoop = setInterval(() => {
-        let head = {x: snake[0].x + dx, y: snake[0].y + dy};
-
-        // Wall hit
-        if (head.x < 0 || head.x >= canvas.width/grid || head.y < 0 || head.y >= canvas.height/grid || snake.some(s=>s.x===head.x && s.y===head.y)) {
-          alert(`Game Over! النقاط: ${score}`);
-          snake = [{x: 5, y: 5}];
-          score = 0;
-          dx = 1; dy = 0;
-          return;
-        }
-
-        snake.unshift(head);
-        if (head.x === food.x && head.y === food.y) {
-          score += 10;
-          food = {x: Math.floor(Math.random()*(canvas.width/grid)), y: Math.floor(Math.random()*(canvas.height/grid))};
-        } else {
-          snake.pop();
-        }
-
-        // Render
-        ctx.fillStyle = '#0a0a18';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-
-        // Food
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(food.x*grid, food.y*grid, grid-1, grid-1);
-
-        // Snake
-        ctx.fillStyle = '#10b981';
-        snake.forEach((s, idx) => {
-          ctx.fillRect(s.x*grid, s.y*grid, grid-1, grid-1);
-        });
-
-      }, 120);
-    }
-
-
-    // =========================================================================
-    // 5. GAME 5: SPACE SHOOTER (GALAGA STYLE)
-    // =========================================================================
-    function initGalaga(container) {
-      document.getElementById('instructionsText').innerText = `حرك السفينة بالأسهم/اللمس، وتطلق الليزر تلقائياً لتدمير الغزاة.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 450;
-      canvas.className = "rounded-xl border border-purple-800 bg-[#05050f]";
-      container.appendChild(canvas);
-
-      const ctx = canvas.getContext('2d');
-      let player = {x: 180, y: 390, w: 40, h: 30};
-      let bullets = [];
-      let enemies = [];
-      let score = 0;
-
-      // Mobile / Mouse move
-      canvas.onmousemove = e => {
-        const rect = canvas.getBoundingClientRect();
-        player.x = e.clientX - rect.left - player.w/2;
-      };
-      canvas.ontouchmove = e => {
-        const rect = canvas.getBoundingClientRect();
-        player.x = e.touches[0].clientX - rect.left - player.w/2;
-      };
-
-      let spawnTimer = 0;
-
-      activeGameLoop = setInterval(() => {
-        spawnTimer++;
-        if (spawnTimer % 30 === 0) {
-          enemies.push({x: Math.random()*(canvas.width-30), y: -30, w: 25, h: 25, speed: 2 + Math.random()*2});
-        }
-        if (spawnTimer % 8 === 0) {
-          bullets.push({x: player.x + player.w/2 - 2, y: player.y, w: 4, h: 10});
-        }
-
-        // Update Bullets
-        bullets.forEach(b => b.y -= 7);
-        bullets = bullets.filter(b => b.y > 0);
-
-        // Update Enemies
-        enemies.forEach(e => e.y += e.speed);
-
-        // Collisions
-        bullets.forEach((b, bi) => {
-          enemies.forEach((e, ei) => {
-            if (b.x < e.x + e.w && b.x + b.w > e.x && b.y < e.y + e.h && b.y + b.h > e.y) {
-              enemies.splice(ei, 1);
-              bullets.splice(bi, 1);
-              score += 20;
-            }
-          });
-        });
-
-        // Draw
-        ctx.fillStyle = '#05050f';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-
-        // Player Ship
-        ctx.fillStyle = '#06b6d4';
-        ctx.fillRect(player.x, player.y, player.w, player.h);
-
-        // Bullets
-        ctx.fillStyle = '#f43f5e';
-        bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
-
-        // Enemies
-        ctx.fillStyle = '#a855f7';
-        enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
-
-        // Score
-        ctx.fillStyle = '#fff';
-        ctx.font = '14px Orbitron';
-        ctx.fillText(`النقاط: ${score}`, 15, 25);
-
-      }, 1000/60);
-    }
-
-
-    // =========================================================================
-    // 6. GAME 6: MEMORY MATCH
-    // =========================================================================
-    function initMemory(container) {
-      document.getElementById('instructionsText').innerText = `انقر على البطاقات واكشف الأزواج المتطابقة بأقل عدد خطوات.`;
-      
-      const icons = ['fa-ghost', 'fa-gamepad', 'fa-rocket', 'fa-bolt', 'fa-crown', 'fa-gem', 'fa-bomb', 'fa-eye'];
-      let cards = [...icons, ...icons].sort(() => Math.random() - 0.5);
-      let flipped = [];
-      let matched = [];
-
-      const grid = document.createElement('div');
-      grid.className = "grid grid-cols-4 gap-3 max-w-xs w-full p-2";
-      container.appendChild(grid);
-
-      function render() {
-        grid.innerHTML = '';
-        cards.forEach((icon, idx) => {
-          const isFlipped = flipped.includes(idx) || matched.includes(idx);
-          const card = document.createElement('button');
-          card.className = `w-full aspect-square rounded-xl text-2xl flex items-center justify-center transition-all duration-300 ${isFlipped ? 'bg-purple-600 text-white rotate-0' : 'bg-[#181832] text-transparent border border-purple-800'}`;
-          card.innerHTML = isFlipped ? `<i class="fa-solid ${icon}"></i>` : '?';
-          card.onclick = () => {
-            if (flipped.length < 2 && !flipped.includes(idx) && !matched.includes(idx)) {
-              flipped.push(idx);
-              render();
-              if (flipped.length === 2) {
-                setTimeout(checkMatch, 600);
-              }
-            }
-          };
-          grid.appendChild(card);
-        });
-      }
-
-      function checkMatch() {
-        if (cards[flipped[0]] === cards[flipped[1]]) {
-          matched.push(...flipped);
-        }
-        flipped = [];
-        render();
-        if (matched.length === cards.length) {
-          alert('أحسنت! أكملت مطابقة كل الأوراق بنجاح 🎉');
-        }
-      }
-
-      render();
-    }
-
-
-    // =========================================================================
-    // 7. GAME 7: BRICK BREAKER
-    // =========================================================================
-    function initBrick(container) {
-      document.getElementById('instructionsText').innerText = `حرك المردب بالماوس/اللمس لمنع الكرة من السقوط وتكسير كافة الطوب.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 420;
-      canvas.height = 360;
-      canvas.className = "rounded-xl border border-purple-800 bg-[#080814]";
-      container.appendChild(canvas);
-
-      const ctx = canvas.getContext('2d');
-      let paddleW = 75, paddleH = 10;
-      let paddleX = (canvas.width - paddleW) / 2;
-      let x = canvas.width/2, y = canvas.height-30;
-      let dx = 3, dy = -3;
-      let brickRows = 4, brickCols = 6;
-      let bricks = [];
-
-      for(let c=0; c<brickCols; c++) {
-        bricks[c] = [];
-        for(let r=0; r<brickRows; r++) {
-          bricks[c][r] = { x: 0, y: 0, status: 1 };
-        }
-      }
-
-      canvas.onmousemove = e => {
-        let rect = canvas.getBoundingClientRect();
-        paddleX = e.clientX - rect.left - paddleW/2;
-      };
-
-      activeGameLoop = setInterval(() => {
-        ctx.fillStyle = '#080814';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Bricks
-        for(let c=0; c<brickCols; c++) {
-          for(let r=0; r<brickRows; r++) {
-            if(bricks[c][r].status === 1) {
-              let bx = c*(60+8) + 15;
-              let by = r*(20+8) + 30;
-              bricks[c][r].x = bx;
-              bricks[c][r].y = by;
-              ctx.fillStyle = r%2===0 ? '#ec4899' : '#06b6d4';
-              ctx.fillRect(bx, by, 60, 20);
-
-              // Hit test
-              if(x > bx && x < bx+60 && y > by && y < by+20) {
-                dy = -dy;
-                bricks[c][r].status = 0;
-              }
-            }
-          }
-        }
-
-        // Ball
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(x, y, 6, 0, Math.PI*2);
-        ctx.fill();
-
-        // Paddle
-        ctx.fillStyle = '#8b5cf6';
-        ctx.fillRect(paddleX, canvas.height-paddleH-10, paddleW, paddleH);
-
-        // Bounce Walls
-        if(x + dx > canvas.width-6 || x + dx < 6) dx = -dx;
-        if(y + dy < 6) dy = -dy;
-        else if(y + dy > canvas.height-20) {
-          if(x > paddleX && x < paddleX + paddleW) {
-            dy = -dy;
-          } else if(y > canvas.height) {
-            x = canvas.width/2; y = canvas.height-30; dx = 3; dy = -3;
-          }
-        }
-
-        x += dx; y += dy;
-      }, 1000/60);
-    }
-
-
-    // =========================================================================
-    // 8. GAME 8: FLAPPY BIRD
-    // =========================================================================
-    function initFlappy(container) {
-      document.getElementById('instructionsText').innerText = `انقر بالشاشة أو اضغط Space للتحليق وتفادي الأنابيب.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 340;
-      canvas.height = 420;
-      canvas.className = "rounded-xl border border-purple-800 bg-[#09091b]";
-      container.appendChild(canvas);
-
-      const ctx = canvas.getContext('2d');
-      let birdY = 200, velocity = 0, gravity = 0.35;
-      let pipes = [];
-      let score = 0;
-
-      const jump = () => { velocity = -6; };
-      canvas.onclick = jump;
-      window.onkeydown = e => { if (e.code === 'Space') jump(); };
-
-      let frame = 0;
-
-      activeGameLoop = setInterval(() => {
-        frame++;
-        velocity += gravity;
-        birdY += velocity;
-
-        if (frame % 90 === 0) {
-          let gap = 110;
-          let topH = Math.random() * (canvas.height - gap - 80) + 30;
-          pipes.push({ x: canvas.width, top: topH, bottom: topH + gap });
-        }
-
-        ctx.fillStyle = '#09091b';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-
-        // Bird
-        ctx.fillStyle = '#eab308';
-        ctx.beginPath();
-        ctx.arc(60, birdY, 12, 0, Math.PI*2);
-        ctx.fill();
-
-        // Pipes
-        pipes.forEach((p, idx) => {
-          p.x -= 2;
-          ctx.fillStyle = '#22c55e';
-          ctx.fillRect(p.x, 0, 45, p.top);
-          ctx.fillRect(p.x, p.bottom, 45, canvas.height - p.bottom);
-
-          // Collision
-          if (60 > p.x && 60 < p.x + 45 && (birdY < p.top || birdY > p.bottom)) {
-            alert(`Game Over! النقاط: ${score}`);
-            birdY = 200; pipes = []; score = 0;
-          }
-          if (p.x === 58) score++;
-        });
-
-        pipes = pipes.filter(p => p.x > -50);
-
-        ctx.fillStyle = '#fff';
-        ctx.font = '16px Orbitron';
-        ctx.fillText(`النتيجة: ${score}`, 15, 30);
-
-      }, 1000/60);
-    }
-
-
-    // =========================================================================
-    // 9. GAME 9: REACTION TIME TEST
-    // =========================================================================
-    function initReaction(container) {
-      document.getElementById('instructionsText').innerText = `انتظر حتى تتحول الشاشة إلى اللون الأخضر، ثم انقر بأسرع ما يمكن!`;
-      
-      const box = document.createElement('div');
-      box.className = "w-full max-w-md h-64 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all bg-red-600 text-white p-6 text-center select-none shadow-xl";
-      box.innerHTML = `<h3 class="text-2xl font-black">انتظر اللون الأخضر...</h3>`;
-      container.appendChild(box);
-
-      let state = 'waiting';
-      let startTime = 0;
-      let timer = setTimeout(() => {
-        state = 'ready';
-        box.className = box.className.replace('bg-red-600', 'bg-emerald-500');
-        box.innerHTML = `<h3 class="text-3xl font-black">اضغط الآن بسرعة! ⚡</h3>`;
-        startTime = Date.now();
-      }, 2000 + Math.random() * 3000);
-
-      box.onclick = () => {
-        if (state === 'waiting') {
-          clearTimeout(timer);
-          box.innerHTML = `<h3 class="text-xl font-bold">ضغطت مبكراً جداً! ❌<br><span class="text-xs">انقر لإعادة المحاولة</span></h3>`;
-          state = 'failed';
-        } else if (state === 'ready') {
-          let diff = Date.now() - startTime;
-          box.innerHTML = `<h3 class="text-3xl font-black">زمن رد الفعل: ${diff} ms 🚀</h3><p class="text-xs mt-2">انقر للمحاولة مجدداً</p>`;
-          state = 'done';
-        } else {
-          initReaction(container);
-        }
-      };
-    }
-
-
-    // =========================================================================
-    // 10. GAME 10: SIMON SAYS
-    // =========================================================================
-    function initSimon(container) {
-      document.getElementById('instructionsText').innerText = `شاهد تسلسل الألوان وكرره بنفس الترتيب.`;
-      
-      let sequence = [];
-      let playerSeq = [];
-      const colors = ['red', 'green', 'blue', 'yellow'];
-
-      const grid = document.createElement('div');
-      grid.className = "grid grid-cols-2 gap-4 w-60 h-60";
-      grid.innerHTML = `
-        <button id="btn-red" class="bg-red-600 rounded-2xl opacity-70 hover:opacity-100 transition active:scale-95"></button>
-        <button id="btn-green" class="bg-green-600 rounded-2xl opacity-70 hover:opacity-100 transition active:scale-95"></button>
-        <button id="btn-blue" class="bg-blue-600 rounded-2xl opacity-70 hover:opacity-100 transition active:scale-95"></button>
-        <button id="btn-yellow" class="bg-yellow-500 rounded-2xl opacity-70 hover:opacity-100 transition active:scale-95"></button>
-      `;
-      container.appendChild(grid);
-
-      function nextRound() {
-        playerSeq = [];
-        sequence.push(colors[Math.floor(Math.random() * 4)]);
-        playSequence();
-      }
-
-      function playSequence() {
-        let idx = 0;
-        let interval = setInterval(() => {
-          flashColor(sequence[idx]);
-          idx++;
-          if (idx >= sequence.length) clearInterval(interval);
-        }, 600);
-      }
-
-      function flashColor(col) {
-        const btn = grid.querySelector(`#btn-${col}`);
-        btn.classList.add('brightness-200', 'scale-105');
-        setTimeout(() => btn.classList.remove('brightness-200', 'scale-105'), 300);
-      }
-
-      colors.forEach(col => {
-        grid.querySelector(`#btn-${col}`).onclick = () => {
-          flashColor(col);
-          playerSeq.push(col);
-          if (playerSeq[playerSeq.length - 1] !== sequence[playerSeq.length - 1]) {
-            alert('خطأ في التسلسل! أعد المحاولة.');
-            sequence = [];
-            nextRound();
-          } else if (playerSeq.length === sequence.length) {
-            setTimeout(nextRound, 800);
-          }
-        };
-      });
-
-      nextRound();
-    }
-
-
-    // =========================================================================
-    // 11. GAME 11: 2048 PUZZLE
-    // =========================================================================
-    function init2048(container) {
-      document.getElementById('instructionsText').innerText = `استخدم أسهم الكيبورد لدمج الأرقام المتشابهة للحصول على 2048.`;
-      
-      let grid = Array(4).fill(null).map(() => Array(4).fill(0));
-      
-      const wrapper = document.createElement('div');
-      wrapper.className = "grid grid-cols-4 gap-2 bg-[#181836] p-3 rounded-2xl border border-purple-800 w-72 h-72";
-      container.appendChild(wrapper);
-
-      function addNumber() {
-        let empty = [];
-        for (let r=0; r<4; r++)
-          for (let c=0; c<4; c++)
-            if (grid[r][c] === 0) empty.push({r, c});
-        if (empty.length > 0) {
-          let spot = empty[Math.floor(Math.random() * empty.length)];
-          grid[spot.r][spot.c] = Math.random() > 0.1 ? 2 : 4;
-        }
-      }
-
-      function render() {
-        wrapper.innerHTML = '';
-        for (let r=0; r<4; r++) {
-          for (let c=0; c<4; c++) {
-            let val = grid[r][c];
-            let cell = document.createElement('div');
-            cell.className = `w-full h-full rounded-xl flex items-center justify-center font-bold text-lg font-orbitron ${val===0?'bg-[#0a0a1a]':val===2?'bg-purple-900 text-white':val===4?'bg-indigo-700 text-white':val===8?'bg-cyan-600 text-white':'bg-pink-600 text-white'}`;
-            cell.innerText = val > 0 ? val : '';
-            wrapper.appendChild(cell);
-          }
-        }
-      }
-
-      window.onkeydown = e => {
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-          addNumber();
-          render();
-        }
-      };
-
-      addNumber(); addNumber(); render();
-    }
-
-
-    // =========================================================================
-    // 12. GAME 12: ROCK PAPER SCISSORS SPOCK
-    // =========================================================================
-    function initRPS(container) {
-      document.getElementById('instructionsText').innerText = `اختر حركتك لمواجهة الذكاء الاصطناعي.`;
-      
-      const choices = ['حجرة ✊', 'ورقة ✋', 'مقص ✌️'];
-      const wrapper = document.createElement('div');
-      wrapper.className = "flex flex-col items-center gap-4 text-center";
-      wrapper.innerHTML = `
-        <div id="rpsResult" class="text-xl font-bold text-cyan-400">اختر حركتك!</div>
-        <div class="flex gap-3">
-          <button onclick="playRPS(0)" class="px-4 py-3 bg-[#1a1a36] hover:bg-purple-800 rounded-xl font-bold border border-purple-700">✊ حجرة</button>
-          <button onclick="playRPS(1)" class="px-4 py-3 bg-[#1a1a36] hover:bg-purple-800 rounded-xl font-bold border border-purple-700">✋ ورقة</button>
-          <button onclick="playRPS(2)" class="px-4 py-3 bg-[#1a1a36] hover:bg-purple-800 rounded-xl font-bold border border-purple-700">✌️ مقص</button>
+            <button onclick="resetColors()" class="w-full mt-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 font-bold text-xs transition-all">
+                استعادة الألوان الافتراضية
+            </button>
         </div>
-      `;
-      container.appendChild(wrapper);
+    </div>
 
-      window.playRPS = (userChoice) => {
-        const aiChoice = Math.floor(Math.random() * 3);
-        const resEl = wrapper.querySelector('#rpsResult');
-        if (userChoice === aiChoice) {
-          resEl.innerText = `تعادل! كلاكما اختار ${choices[userChoice]}`;
-        } else if ((userChoice === 0 && aiChoice === 2) || (userChoice === 1 && aiChoice === 0) || (userChoice === 2 && aiChoice === 1)) {
-          resEl.innerText = `فوز رائع! 🎉 اخترت ${choices[userChoice]} والبوت ${choices[aiChoice]}`;
-        } else {
-          resEl.innerText = `خسارة! 😅 اخترت ${choices[userChoice]} والبوت ${choices[aiChoice]}`;
-        }
-      };
-    }
+    <!-- MAHDI GAMES WINDOW -->
+    <div id="appGamesWindow" class="hidden fixed inset-4 sm:inset-8 z-40 glass-panel rounded-3xl flex flex-col overflow-hidden border border-white/20 shadow-2xl">
+        <div class="bg-slate-900/90 px-5 py-3 flex items-center justify-between border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-lg theme-accent-bg flex items-center justify-center text-white text-xs font-bold">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+                <h3 class="font-black text-sm tracking-wide">تطبيق الألعاب (Mahdi Games)</h3>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleHighScoresModal()" class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs flex items-center gap-2 border border-amber-500/30 transition-all">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span>الأرقام القياسية</span>
+                </button>
+                <button onclick="closeApp('games')" class="w-8 h-8 rounded-full bg-rose-500/80 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
 
+        <div class="flex-1 p-6 overflow-y-auto">
+            <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+                <h2 class="font-black text-base flex items-center gap-2">
+                    <i class="fa-solid fa-list-check theme-accent-text"></i>
+                    اختر لعبة للبدء
+                </h2>
+                <div class="flex items-center gap-2 text-xs font-bold bg-slate-900/50 p-1 rounded-xl border border-white/10">
+                    <button onclick="filterGames('all')" class="cat-btn px-3 py-1.5 rounded-lg theme-accent-bg text-white">الكل</button>
+                    <button onclick="filterGames('ai')" class="cat-btn px-3 py-1.5 rounded-lg hover:bg-white/10">ضد الذكاء الاصطناعي</button>
+                    <button onclick="filterGames('2p')" class="cat-btn px-3 py-1.5 rounded-lg hover:bg-white/10">لاعبين (2P)</button>
+                    <button onclick="filterGames('arcade')" class="cat-btn px-3 py-1.5 rounded-lg hover:bg-white/10">أركيد وسرعة</button>
+                </div>
+            </div>
 
-    // =========================================================================
-    // 13. GAME 13: WHACK A MOLE
-    // =========================================================================
-    function initWhack(container) {
-      document.getElementById('instructionsText').innerText = `اصطاد الأهداف الظاهرة بلمسها بأسرع سرعة لجمع النقاط.`;
-      
-      let score = 0;
-      const wrapper = document.createElement('div');
-      wrapper.className = "flex flex-col items-center gap-3";
-      wrapper.innerHTML = `
-        <div class="text-sm font-bold text-cyan-400">النقاط: <span id="moleScore">0</span></div>
-        <div class="grid grid-cols-3 gap-3 w-64 h-64 bg-[#14142b] p-3 rounded-2xl border border-purple-800" id="moleGrid"></div>
-      `;
-      container.appendChild(wrapper);
+            <div id="gamesAppGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Games rendered dynamically -->
+            </div>
+        </div>
+    </div>
 
-      const grid = wrapper.querySelector('#moleGrid');
-      for (let i = 0; i < 9; i++) {
-        const btn = document.createElement('button');
-        btn.className = "w-full h-full bg-[#0a0a1a] rounded-xl text-3xl flex items-center justify-center transition";
-        grid.appendChild(btn);
-      }
+    <!-- ACTIVE GAME RUNNER MODAL -->
+    <div id="activeGameModal" class="hidden fixed inset-2 sm:inset-6 z-50 glass-panel rounded-3xl flex flex-col overflow-hidden border border-white/20 shadow-2xl">
+        <div class="bg-slate-950 px-5 py-3 flex items-center justify-between border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <i id="currentGameIcon" class="text-xl theme-accent-text"></i>
+                <h3 id="currentGameTitle" class="font-black text-sm"></h3>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="gameScoreTag" class="text-xs font-bold text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">النقاط: 0</span>
+                <button onclick="closeActiveGame()" class="w-8 h-8 rounded-full bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        <div id="gamePlayground" class="flex-1 bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <!-- Active Game Canvas Render -->
+        </div>
+    </div>
 
-      activeGameLoop = setInterval(() => {
-        const buttons = grid.querySelectorAll('button');
-        buttons.forEach(b => { b.innerText = ''; b.onclick = null; });
-        const rand = Math.floor(Math.random() * 9);
-        buttons[rand].innerText = '🎯';
-        buttons[rand].onclick = () => {
-          score += 10;
-          wrapper.querySelector('#moleScore').innerText = score;
-          buttons[rand].innerText = '💥';
+    <!-- HIGH SCORES MODAL -->
+    <div id="highScoresModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-white/20 shadow-2xl">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                <h3 class="font-black text-base flex items-center gap-2 text-amber-400">
+                    <i class="fa-solid fa-trophy"></i>
+                    لوحة الأرقام القياسية (High Scores)
+                </h3>
+                <button onclick="toggleHighScoresModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div id="highScoresList" class="space-y-2 max-h-60 overflow-y-auto pr-1 text-xs">
+                <!-- High scores list injected via JS -->
+            </div>
+
+            <button onclick="clearHighScores()" class="w-full mt-6 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-xs border border-rose-500/30 transition-all">
+                تصفير جميع الأرقام القياسية
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const GAMES_DATABASE = [
+            { id: 'snake', name: 'الثعبان السريع', cat: 'arcade', icon: 'fa-staff-snake', color: 'from-green-500 to-emerald-700' },
+            { id: 'tictactoe', name: 'إكس أو ضد البوت', cat: 'ai', icon: 'fa-xmark', color: 'from-pink-500 to-rose-600' },
+            { id: 'space', name: 'حرب الفضاء', cat: 'arcade', icon: 'fa-rocket', color: 'from-purple-500 to-pink-600' },
+            { id: 'brick', name: 'تحطيم الكتل', cat: 'arcade', icon: 'fa-cubes', color: 'from-red-500 to-rose-600' },
+            { id: 'flappy', name: 'الطائر القافز', cat: 'arcade', icon: 'fa-dove', color: 'from-yellow-400 to-amber-500' },
+            { id: 'pong', name: 'بونج التحدي (2P)', cat: '2p', icon: 'fa-table-tennis-paddle-ball', color: 'from-sky-500 to-blue-600' },
+            { id: 'memory', name: 'طابق الذاكرة', cat: 'ai', icon: 'fa-brain', color: 'from-amber-500 to-yellow-600' },
+            { id: 'math', name: 'تحدي الحساب', cat: 'ai', icon: 'fa-calculator', color: 'from-indigo-500 to-purple-600' },
+            { id: 'simon', name: 'تذكر الألوان', cat: 'ai', icon: 'fa-lightbulb', color: 'from-cyan-500 to-blue-600' },
+            { id: 'car', name: 'تفادي السيارات', cat: 'arcade', icon: 'fa-car', color: 'from-emerald-500 to-teal-700' }
+        ];
+
+        let isNight = true;
+        let activeInterval = null;
+
+        window.onload = function() {
+            startClock();
+            initParticlesCanvas();
+            renderGamesAppCatalog(GAMES_DATABASE);
+            loadSavedHighScores();
         };
-      }, 700);
-    }
 
-
-    // =========================================================================
-    // 14. GAME 14: ENDLESS RUNNER (DINO JUMP)
-    // =========================================================================
-    function initDino(container) {
-      document.getElementById('instructionsText').innerText = `انقر بالشاشة أو اضغط سهم الأعلى للقفز وتفادي العقبات.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 420;
-      canvas.height = 200;
-      canvas.className = "rounded-xl border border-purple-800 bg-[#070714]";
-      container.appendChild(canvas);
-
-      const ctx = canvas.getContext('2d');
-      let runnerY = 140, dy = 0, isJumping = false;
-      let obstacles = [];
-      let score = 0;
-
-      const jump = () => {
-        if (!isJumping) { dy = -9; isJumping = true; }
-      };
-      canvas.onclick = jump;
-      window.onkeydown = e => { if (e.code==='ArrowUp'||e.code==='Space') jump(); };
-
-      activeGameLoop = setInterval(() => {
-        dy += 0.45;
-        runnerY += dy;
-        if (runnerY >= 140) { runnerY = 140; dy = 0; isJumping = false; }
-
-        if (Math.random() < 0.02) obstacles.push({x: canvas.width, w: 15, h: 25});
-
-        ctx.fillStyle = '#070714';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
-
-        // Ground
-        ctx.strokeStyle = '#333366';
-        ctx.beginPath(); ctx.moveTo(0, 165); ctx.lineTo(canvas.width, 165); ctx.stroke();
-
-        // Runner
-        ctx.fillStyle = '#06b6d4';
-        ctx.fillRect(40, runnerY, 20, 25);
-
-        // Obstacles
-        obstacles.forEach((o, idx) => {
-          o.x -= 4;
-          ctx.fillStyle = '#f43f5e';
-          ctx.fillRect(o.x, 140, o.w, o.h);
-
-          // Collision
-          if (40 < o.x + o.w && 60 > o.x && runnerY + 25 > 140) {
-            alert(`Game Over! النتيجة: ${score}`);
-            obstacles = []; score = 0;
-          }
-        });
-
-        score++;
-        ctx.fillStyle = '#fff';
-        ctx.font = '12px Orbitron';
-        ctx.fillText(`المسافة: ${score}`, 10, 20);
-
-      }, 1000/60);
-    }
-
-
-    // =========================================================================
-    // 15. GAME 15: PENALTY SHOOTOUT
-    // =========================================================================
-    function initPenalty(container) {
-      document.getElementById('instructionsText').innerText = `انقر في المرمى لتسديد الكرة والتغلب على الحارس.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 380;
-      canvas.height = 300;
-      canvas.className = "rounded-xl border border-purple-800 bg-[#0a1a0a]";
-      container.appendChild(canvas);
-
-      const ctx = canvas.getContext('2d');
-      let keeperX = 170;
-      let score = 0;
-
-      canvas.onclick = e => {
-        let rect = canvas.getBoundingClientRect();
-        let shotX = e.clientX - rect.left;
-        let shotY = e.clientY - rect.top;
-
-        if (shotY < 120) { // Goal area
-          let keeperCaught = Math.abs(shotX - keeperX) < 40;
-          if (keeperCaught) {
-            alert('صدها الحارس! 🧤');
-          } else {
-            score++;
-            alert('هدف رائع! ⚽🎉');
-          }
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('osClock').innerText = now.toLocaleTimeString('ar-EG');
+            }, 1000);
         }
-      };
 
-      activeGameLoop = setInterval(() => {
-        keeperX += (Math.random() - 0.5) * 8;
-        keeperX = Math.max(80, Math.min(260, keeperX));
+        function toggleDayNightMode() {
+            isNight = !isNight;
+            const toggle = document.getElementById('celestialToggle');
+            const day = document.getElementById('dayScene');
+            const night = document.getElementById('nightScene');
 
-        ctx.fillStyle = '#0a200a';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+            if(isNight) {
+                toggle.className = 'celestial-toggle night-mode p-1 flex items-center justify-between relative';
+                day.classList.add('opacity-0');
+                night.classList.remove('opacity-0');
+                document.documentElement.style.setProperty('--bg-canvas', '#090d16');
+                document.documentElement.style.setProperty('--text-color', '#f8fafc');
+            } else {
+                toggle.className = 'celestial-toggle day-mode p-1 flex items-center justify-between relative';
+                night.classList.add('opacity-0');
+                day.classList.remove('opacity-0');
+                document.documentElement.style.setProperty('--bg-canvas', '#f0f9ff');
+                document.documentElement.style.setProperty('--text-color', '#0c4a6e');
+            }
+        }
 
-        // Goal Frame
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(60, 20, 260, 100);
+        function openApp(appName) {
+            closeStartMenu();
+            if(appName === 'games') {
+                document.getElementById('appGamesWindow').classList.remove('hidden');
+            }
+        }
 
-        // Goalkeeper
-        ctx.fillStyle = '#eab308';
-        ctx.fillRect(keeperX - 20, 70, 40, 50);
+        function closeApp(appName) {
+            if(appName === 'games') {
+                document.getElementById('appGamesWindow').classList.add('hidden');
+            }
+        }
 
-        // Ball
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(190, 250, 10, 0, Math.PI*2); ctx.fill();
+        function toggleStartMenu() {
+            document.getElementById('startMenu').classList.toggle('hidden');
+        }
 
-        ctx.font = '14px Orbitron';
-        ctx.fillText(`الأهداف: ${score}`, 15, 290);
-      }, 1000/30);
-    }
+        function closeStartMenu() {
+            document.getElementById('startMenu').classList.add('hidden');
+        }
 
+        function renderGamesAppCatalog(list) {
+            const grid = document.getElementById('gamesAppGrid');
+            grid.innerHTML = '';
+            list.forEach(g => {
+                const highScore = getHighScore(g.id);
+                const card = document.createElement('div');
+                card.className = 'glass-panel p-4 rounded-2xl flex flex-col justify-between cursor-pointer hover:scale-105 transition-all group border border-white/10';
+                card.onclick = () => launchActiveGame(g.id);
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr ${g.color} flex items-center justify-center text-white text-xl shadow-lg mb-3 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid ${g.icon}"></i>
+                    </div>
+                    <h4 class="font-bold text-xs mb-1 line-clamp-1">${g.name}</h4>
+                    <div class="flex items-center justify-between mt-2 text-[10px] text-amber-400 font-bold">
+                        <span><i class="fa-solid fa-crown text-[9px] mr-1"></i>${highScore}</span>
+                        <span class="theme-accent-text">تشغيل ←</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
 
-    // =========================================================================
-    // 16. GAME 16: COLOR DODGE
-    // =========================================================================
-    function initColorSwitch(container) {
-      document.getElementById('instructionsText').innerText = `حرك الكرات يميناً ويساراً لتفادي الأشكال غير المطابقة.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 320; canvas.height = 360;
-      canvas.className = "rounded-xl border border-purple-800 bg-[#0a0a18]";
-      container.appendChild(canvas);
+        function filterGames(cat) {
+            if(cat === 'all') renderGamesAppCatalog(GAMES_DATABASE);
+            else renderGamesAppCatalog(GAMES_DATABASE.filter(g => g.cat === cat));
+        }
 
-      const ctx = canvas.getContext('2d');
-      let px = 150;
-      canvas.onmousemove = e => { px = e.clientX - canvas.getBoundingClientRect().left; };
+        function launchActiveGame(gameId) {
+            const game = GAMES_DATABASE.find(g => g.id === gameId);
+            if(!game) return;
 
-      activeGameLoop = setInterval(() => {
-        ctx.fillStyle = '#0a0a18';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+            if(activeInterval) clearInterval(activeInterval);
+            document.onkeydown = null;
 
-        ctx.fillStyle = '#06b6d4';
-        ctx.beginPath(); ctx.arc(px, 320, 12, 0, Math.PI*2); ctx.fill();
-      }, 1000/60);
-    }
+            document.getElementById('currentGameIcon').className = `fa-solid ${game.icon} text-xl theme-accent-text`;
+            document.getElementById('currentGameTitle').innerText = game.name;
+            document.getElementById('gameScoreTag').innerText = `النقاط: 0`;
+            document.getElementById('activeGameModal').classList.remove('hidden');
 
+            const playground = document.getElementById('gamePlayground');
+            playground.innerHTML = '';
 
-    // =========================================================================
-    // 17. GAME 17: AIM TRAINER
-    // =========================================================================
-    function initAimTrainer(container) {
-      document.getElementById('instructionsText').innerText = `انقر الأهداف الحمراء بأسرع وقت لزيادة الدقة والسرعة.`;
-      
-      let hits = 0;
-      const box = document.createElement('div');
-      box.className = "w-full max-w-sm h-72 bg-[#101026] rounded-2xl border border-purple-800 relative overflow-hidden";
-      container.appendChild(box);
+            switch(gameId) {
+                case 'snake': runSnakeGame(playground); break;
+                case 'tictactoe': runTicTacToeGame(playground); break;
+                case 'space': runSpaceGame(playground); break;
+                case 'brick': runBrickGame(playground); break;
+                case 'flappy': runFlappyGame(playground); break;
+                case 'pong': runPongGame(playground); break;
+                case 'memory': runMemoryGame(playground); break;
+                case 'math': runMathGame(playground); break;
+                case 'simon': runSimonGame(playground); break;
+                case 'car': runCarGame(playground); break;
+                default: break;
+            }
+        }
 
-      function spawnTarget() {
-        box.innerHTML = `<div class="absolute text-xs text-cyan-400 top-2 right-2">الأهداف: ${hits}</div>`;
-        const target = document.createElement('div');
-        const size = Math.floor(Math.random() * 20) + 30;
-        target.style.width = `${size}px`;
-        target.style.height = `${size}px`;
-        target.style.left = `${Math.random() * 80}%`;
-        target.style.top = `${Math.random() * 80}%`;
-        target.className = "absolute bg-rose-500 rounded-full cursor-pointer animate-ping border-2 border-white";
-        target.onclick = () => { hits++; spawnTarget(); };
-        box.appendChild(target);
-      }
+        function closeActiveGame() {
+            if(activeInterval) clearInterval(activeInterval);
+            document.onkeydown = null;
+            document.getElementById('activeGameModal').classList.add('hidden');
+        }
 
-      spawnTarget();
-    }
+        /* 1. Snake Game */
+        function runSnakeGame(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 320; canvas.height = 320;
+            canvas.className = 'border border-white/20 rounded-2xl bg-slate-950 shadow-2xl';
+            container.appendChild(canvas);
 
+            const ctx = canvas.getContext('2d');
+            let snake = [{x: 160, y: 160}];
+            let food = {x: 80, y: 80};
+            let dx = 20, dy = 0;
+            let score = 0;
 
-    // =========================================================================
-    // 18. GAME 18: MATH SPEED CHALLENGE
-    // =========================================================================
-    function initMath(container) {
-      document.getElementById('instructionsText').innerText = `حل المسائل الرياضية بسرعة قبل انتهاء الوقت.`;
-      
-      let score = 0;
-      const wrapper = document.createElement('div');
-      wrapper.className = "flex flex-col items-center gap-4 text-center";
-      container.appendChild(wrapper);
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, 320, 320);
 
-      function newQuestion() {
-        let n1 = Math.floor(Math.random() * 12) + 1;
-        let n2 = Math.floor(Math.random() * 12) + 1;
-        let ans = n1 + n2;
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(food.x, food.y, 18, 18);
 
-        wrapper.innerHTML = `
-          <div class="text-sm text-cyan-400 font-bold">النقاط: ${score}</div>
-          <div class="text-3xl font-black font-orbitron">${n1} + ${n2} = ?</div>
-          <div class="flex gap-2">
-            <button onclick="checkMath(${ans})" class="px-4 py-2 bg-purple-700 rounded-xl font-bold">${ans}</button>
-            <button onclick="checkMath(${ans + 3})" class="px-4 py-2 bg-purple-700 rounded-xl font-bold">${ans + 3}</button>
-            <button onclick="checkMath(${ans - 2})" class="px-4 py-2 bg-purple-700 rounded-xl font-bold">${ans - 2}</button>
-          </div>
-        `;
-      }
+                snake.forEach((p, i) => {
+                    ctx.fillStyle = i === 0 ? '#3b82f6' : '#60a5fa';
+                    ctx.fillRect(p.x, p.y, 18, 18);
+                });
 
-      window.checkMath = (val) => {
-        score++;
-        newQuestion();
-      };
+                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+                if(head.x < 0 || head.x >= 320 || head.y < 0 || head.y >= 320 || snake.some(s => s.x === head.x && s.y === head.y)) {
+                    clearInterval(activeInterval);
+                    saveHighScore('snake', score);
+                    alert('انتهت اللعبة! مجموع نقاطك: ' + score);
+                    return;
+                }
 
-      newQuestion();
-    }
+                snake.unshift(head);
+                if(head.x === food.x && head.y === food.y) {
+                    score += 10;
+                    document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+                    food = {x: Math.floor(Math.random()*16)*20, y: Math.floor(Math.random()*16)*20};
+                } else {
+                    snake.pop();
+                }
+            }
 
+            document.onkeydown = (e) => {
+                if(e.key === 'ArrowUp' && dy===0) { dx=0; dy=-20; }
+                if(e.key === 'ArrowDown' && dy===0) { dx=0; dy=20; }
+                if(e.key === 'ArrowLeft' && dx===0) { dx=-20; dy=0; }
+                if(e.key === 'ArrowRight' && dx===0) { dx=20; dy=0; }
+            };
 
-    // =========================================================================
-    // 20. GAME 20: HIGHWAY CAR RACE
-    // =========================================================================
-    function initCarRace(container) {
-      document.getElementById('instructionsText').innerText = `حرك سيارتك لتفادي حركة المرور في الطريق السريع.`;
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 320; canvas.height = 400;
-      canvas.className = "rounded-xl border border-purple-800 bg-[#111]";
-      container.appendChild(canvas);
+            activeInterval = setInterval(draw, 120);
+        }
 
-      const ctx = canvas.getContext('2d');
-      let carX = 140;
-      let enemies = [];
+        /* 2. Tic-Tac-Toe vs Bot */
+        function runTicTacToeGame(container) {
+            let board = Array(9).fill('');
+            let score = 0;
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-3 gap-3 w-64 h-64';
+            container.appendChild(grid);
 
-      canvas.onmousemove = e => {
-        let rect = canvas.getBoundingClientRect();
-        carX = e.clientX - rect.left - 15;
-      };
+            function render() {
+                grid.innerHTML = '';
+                board.forEach((val, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-full h-full bg-slate-900 border border-white/20 rounded-2xl text-2xl font-black flex items-center justify-center text-white hover:bg-white/10';
+                    btn.innerText = val;
+                    btn.onclick = () => playerMove(idx);
+                    grid.appendChild(btn);
+                });
+            }
 
-      activeGameLoop = setInterval(() => {
-        if (Math.random() < 0.03) enemies.push({x: Math.random()*280, y: -40});
+            function playerMove(idx) {
+                if(board[idx] !== '') return;
+                board[idx] = 'X';
+                if(checkWin('X')) {
+                    score += 50;
+                    saveHighScore('tictactoe', score);
+                    document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+                    alert('فزت على البوت!');
+                    board.fill('');
+                    render();
+                    return;
+                }
+                botMove();
+                render();
+            }
 
-        ctx.fillStyle = '#111';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+            function botMove() {
+                let empty = board.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+                if(empty.length === 0) {
+                    board.fill('');
+                    return;
+                }
+                let choice = empty[Math.floor(Math.random() * empty.length)];
+                board[choice] = 'O';
+                if(checkWin('O')) {
+                    alert('فاز البوت!');
+                    board.fill('');
+                }
+            }
 
-        // Player Car
-        ctx.fillStyle = '#06b6d4';
-        ctx.fillRect(carX, 320, 30, 50);
+            function checkWin(p) {
+                const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+                return wins.some(w => w.every(i => board[i] === p));
+            }
 
-        // Enemy Cars
-        enemies.forEach(e => {
-          e.y += 4;
-          ctx.fillStyle = '#f43f5e';
-          ctx.fillRect(e.x, e.y, 30, 50);
-        });
+            render();
+        }
 
-      }, 1000/60);
-    }
+        /* 3. Space Shooter */
+        function runSpaceGame(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 320; canvas.height = 360;
+            canvas.className = 'border border-white/20 rounded-2xl bg-slate-950 shadow-2xl';
+            container.appendChild(canvas);
 
-  </script>
+            const ctx = canvas.getContext('2d');
+            let player = {x: 140, y: 320, w: 40, h: 20};
+            let bullets = [];
+            let enemies = [];
+            let score = 0;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, 320, 360);
+
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(player.x, player.y, player.w, player.h);
+
+                if(Math.random() < 0.05) enemies.push({x: Math.random()*280, y: 0, w: 25, h: 25});
+
+                ctx.fillStyle = '#ef4444';
+                enemies.forEach((e, ei) => {
+                    e.y += 2;
+                    ctx.fillRect(e.x, e.y, e.w, e.h);
+                    if(e.y > 360) {
+                        clearInterval(activeInterval);
+                        saveHighScore('space', score);
+                        alert('خسرت! النقاط: ' + score);
+                    }
+                });
+
+                ctx.fillStyle = '#f59e0b';
+                bullets.forEach((b, bi) => {
+                    b.y -= 5;
+                    ctx.fillRect(b.x, b.y, 4, 10);
+                    enemies.forEach((e, ei) => {
+                        if(b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
+                            enemies.splice(ei, 1);
+                            bullets.splice(bi, 1);
+                            score += 10;
+                            document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+                        }
+                    });
+                });
+            }
+
+            document.onkeydown = (e) => {
+                if(e.key === 'ArrowLeft' && player.x > 0) player.x -= 20;
+                if(e.key === 'ArrowRight' && player.x < 280) player.x += 20;
+                if(e.key === ' ') bullets.push({x: player.x + 18, y: player.y});
+            };
+
+            activeInterval = setInterval(draw, 30);
+        }
+
+        /* 4. Brick Breaker */
+        function runBrickGame(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 320; canvas.height = 340;
+            canvas.className = 'border border-white/20 rounded-2xl bg-slate-950 shadow-2xl';
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            let paddle = {x: 120, w: 80, h: 12};
+            let ball = {x: 160, y: 200, dx: 3, dy: -3, r: 6};
+            let score = 0;
+            let bricks = [];
+
+            for(let r=0; r<4; r++) {
+                for(let c=0; c<5; c++) {
+                    bricks.push({x: c*60 + 10, y: r*25 + 30, w: 50, h: 18, status: 1});
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, 320, 340);
+
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(paddle.x, 320, paddle.w, paddle.h);
+
+                ctx.fillStyle = '#f43f5e';
+                ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+
+                bricks.forEach(b => {
+                    if(b.status === 1) {
+                        ctx.fillStyle = '#10b981';
+                        ctx.fillRect(b.x, b.y, b.w, b.h);
+
+                        if(ball.x > b.x && ball.x < b.x + b.w && ball.y > b.y && ball.y < b.y + b.h) {
+                            ball.dy = -ball.dy;
+                            b.status = 0;
+                            score += 15;
+                            document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+                        }
+                    }
+                });
+
+                ball.x += ball.dx; ball.y += ball.dy;
+                if(ball.x < 0 || ball.x > 320) ball.dx = -ball.dx;
+                if(ball.y < 0) ball.dy = -ball.dy;
+                if(ball.y > 320 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) ball.dy = -ball.dy;
+                if(ball.y > 340) {
+                    clearInterval(activeInterval);
+                    saveHighScore('brick', score);
+                    alert('انتهت اللعبة! نقاطك: ' + score);
+                }
+            }
+
+            document.onkeydown = (e) => {
+                if(e.key === 'ArrowLeft' && paddle.x > 0) paddle.x -= 25;
+                if(e.key === 'ArrowRight' && paddle.x < 240) paddle.x += 25;
+            };
+
+            activeInterval = setInterval(draw, 20);
+        }
+
+        /* 5. Flappy Bird */
+        function runFlappyGame(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 300; canvas.height = 360;
+            canvas.className = 'border border-white/20 rounded-2xl bg-slate-950 shadow-2xl';
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            let bird = {y: 180, velocity: 0, gravity: 0.5, jump: -7};
+            let pipes = [];
+            let score = 0;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, 300, 360);
+
+                bird.velocity += bird.gravity;
+                bird.y += bird.velocity;
+
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath(); ctx.arc(60, bird.y, 10, 0, Math.PI*2); ctx.fill();
+
+                if(Math.random() < 0.02) {
+                    let gap = 90;
+                    let top = Math.random() * 150 + 20;
+                    pipes.push({x: 300, top: top, bottom: top + gap});
+                }
+
+                ctx.fillStyle = '#10b981';
+                pipes.forEach((p, i) => {
+                    p.x -= 2;
+                    ctx.fillRect(p.x, 0, 30, p.top);
+                    ctx.fillRect(p.x, p.bottom, 30, 360 - p.bottom);
+
+                    if(p.x === 60) {
+                        score += 10;
+                        document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+                    }
+
+                    if((60 > p.x && 60 < p.x + 30) && (bird.y < p.top || bird.y > p.bottom) || bird.y > 360 || bird.y < 0) {
+                        clearInterval(activeInterval);
+                        saveHighScore('flappy', score);
+                        alert('سقط الطائر! نقاطك: ' + score);
+                    }
+                });
+            }
+
+            document.onkeydown = (e) => { if(e.key === ' ') bird.velocity = bird.jump; };
+            canvas.onclick = () => bird.velocity = bird.jump;
+
+            activeInterval = setInterval(draw, 30);
+        }
+
+        /* 6. Pong 2P */
+        function runPongGame(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 320; canvas.height = 320;
+            canvas.className = 'border border-white/20 rounded-2xl bg-slate-950 shadow-2xl';
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            let p1 = 120, p2 = 120;
+            let ball = {x: 160, y: 160, dx: 3, dy: 3};
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, 320, 320);
+
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(10, p1, 10, 60);
+                ctx.fillRect(300, p2, 10, 60);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(ball.x, ball.y, 8, 8);
+
+                ball.x += ball.dx; ball.y += ball.dy;
+                if(ball.y < 0 || ball.y > 310) ball.dy = -ball.dy;
+
+                if(ball.x < 20 && ball.y > p1 && ball.y < p1 + 60) ball.dx = -ball.dx;
+                if(ball.x > 290 && ball.y > p2 && ball.y < p2 + 60) ball.dx = -ball.dx;
+
+                if(ball.x < 0 || ball.x > 320) {
+                    ball = {x: 160, y: 160, dx: -ball.dx, dy: 3};
+                }
+            }
+
+            document.onkeydown = (e) => {
+                if(e.key === 'w' && p1 > 0) p1 -= 20;
+                if(e.key === 's' && p1 < 260) p1 += 20;
+                if(e.key === 'ArrowUp' && p2 > 0) p2 -= 20;
+                if(e.key === 'ArrowDown' && p2 < 260) p2 += 20;
+            };
+
+            activeInterval = setInterval(draw, 20);
+        }
+
+        /* 7. Memory Match */
+        function runMemoryGame(container) {
+            const icons = ['fa-ghost', 'fa-dragon', 'fa-bolt', 'fa-skull', 'fa-ghost', 'fa-dragon', 'fa-bolt', 'fa-skull'];
+            let shuffled = icons.sort(() => Math.random() - 0.5);
+            let selected = [];
+            let score = 0;
+
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-4 gap-3 w-64 h-64';
+            container.appendChild(grid);
+
+            shuffled.forEach((icon, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full h-full bg-slate-900 border border-white/20 rounded-2xl flex items-center justify-center text-xl text-white hover:bg-white/10';
+                btn.onclick = () => {
+                    btn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+                    selected.push({icon, btn});
+                    if(selected.length === 2) {
+                        if(selected[0].icon === selected[1].icon) {
+                            score += 25;
+                            document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+                            saveHighScore('memory', score);
+                            selected = [];
+                        } else {
+                            setTimeout(() => {
+                                selected[0].btn.innerHTML = '';
+                                selected[1].btn.innerHTML = '';
+                                selected = [];
+                            }, 600);
+                        }
+                    }
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        /* 8. Math Quiz */
+        function runMathGame(container) {
+            let score = 0;
+            const box = document.createElement('div');
+            box.className = 'text-center space-y-4';
+            container.appendChild(box);
+
+            function nextQuestion() {
+                let a = Math.floor(Math.random() * 20) + 1;
+                let b = Math.floor(Math.random() * 20) + 1;
+                let ans = a + b;
+
+                box.innerHTML = `
+                    <h3 class="text-3xl font-black">${a} + ${b} = ?</h3>
+                    <input type="number" id="mathAns" class="p-2 rounded-xl text-slate-950 font-bold w-32 text-center" autofocus>
+                    <button id="mathSub" class="block mx-auto px-4 py-2 bg-blue-500 rounded-xl font-bold">إرسال</button>
+                `;
+
+                document.getElementById('mathSub').onclick = () => {
+                    let userAns = parseInt(document.getElementById('mathAns').value);
+                    if(userAns === ans) {
+                        score += 10;
+                        document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+                        saveHighScore('math', score);
+                        nextQuestion();
+                    } else {
+                        alert('إجابة خاطئة!');
+                    }
+                };
+            }
+            nextQuestion();
+        }
+
+        /* 9. Simon Says Color */
+        function runSimonGame(container) {
+            let sequence = [];
+            let playerSeq = [];
+            let score = 0;
+            const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500'];
+
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-2 gap-3 w-64 h-64';
+            container.appendChild(grid);
+
+            colors.forEach((c, i) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full h-full ${c} rounded-2xl opacity-70 hover:opacity-100`;
+                btn.onclick = () => {
+                    playerSeq.push(i);
+                    if(playerSeq[playerSeq.length-1] !== sequence[playerSeq.length-1]) {
+                        alert('خطأ بالتسلسل!');
+                        sequence = []; playerSeq = [];
+                        nextRound();
+                        return;
+                    }
+                    if(playerSeq.length === sequence.length) {
+                        score += 20;
+                        document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+                        saveHighScore('simon', score);
+                        playerSeq = [];
+                        setTimeout(nextRound, 800);
+                    }
+                };
+                grid.appendChild(btn);
+            });
+
+            function nextRound() {
+                sequence.push(Math.floor(Math.random()*4));
+            }
+            nextRound();
+        }
+
+        /* 10. Car Dodge */
+        function runCarGame(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 300; canvas.height = 360;
+            canvas.className = 'border border-white/20 rounded-2xl bg-slate-950 shadow-2xl';
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            let playerX = 130;
+            let enemies = [];
+            let score = 0;
+
+            function draw() {
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(0, 0, 300, 360);
+
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(playerX, 300, 40, 50);
+
+                if(Math.random() < 0.04) enemies.push({x: Math.random()*250, y: 0});
+
+                ctx.fillStyle = '#ef4444';
+                enemies.forEach(e => {
+                    e.y += 4;
+                    ctx.fillRect(e.x, e.y, 40, 50);
+
+                    if(e.y > 250 && e.y < 350 && Math.abs(e.x - playerX) < 35) {
+                        clearInterval(activeInterval);
+                        saveHighScore('car', score);
+                        alert('اصطدمت بالسيارة! نقاطك: ' + score);
+                    }
+                });
+
+                score += 1;
+                document.getElementById('gameScoreTag').innerText = `النقاط: ${score}`;
+            }
+
+            document.onkeydown = (e) => {
+                if(e.key === 'ArrowLeft' && playerX > 10) playerX -= 30;
+                if(e.key === 'ArrowRight' && playerX < 250) playerX += 30;
+            };
+
+            activeInterval = setInterval(draw, 30);
+        }
+
+        /* Colors Customization */
+        function toggleThemeModal() {
+            document.getElementById('themeModal').classList.toggle('hidden');
+        }
+
+        function updateCustomColors() {
+            const primary = document.getElementById('primaryColorInput').value;
+            const bg = document.getElementById('bgColorInput').value;
+            const text = document.getElementById('textColorInput').value;
+
+            document.documentElement.style.setProperty('--primary-color', primary);
+            document.documentElement.style.setProperty('--bg-canvas', bg);
+            document.documentElement.style.setProperty('--text-color', text);
+        }
+
+        function resetColors() {
+            document.documentElement.style.setProperty('--primary-color', '#3b82f6');
+            document.documentElement.style.setProperty('--bg-canvas', '#090d16');
+            document.documentElement.style.setProperty('--text-color', '#f8fafc');
+            toggleThemeModal();
+        }
+
+        /* High Scores Functions */
+        function getHighScore(gameId) {
+            return localStorage.getItem(`mahdi_hs_${gameId}`) || 0;
+        }
+
+        function saveHighScore(gameId, score) {
+            const current = parseInt(getHighScore(gameId));
+            if(score > current) {
+                localStorage.setItem(`mahdi_hs_${gameId}`, score);
+                renderGamesAppCatalog(GAMES_DATABASE);
+            }
+        }
+
+        function toggleHighScoresModal() {
+            const modal = document.getElementById('highScoresModal');
+            modal.classList.toggle('hidden');
+            if(!modal.classList.contains('hidden')) loadSavedHighScores();
+        }
+
+        function loadSavedHighScores() {
+            const list = document.getElementById('highScoresList');
+            list.innerHTML = '';
+            GAMES_DATABASE.forEach(g => {
+                const score = getHighScore(g.id);
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5';
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid ${g.icon} theme-accent-text"></i>
+                        <span>${g.name}</span>
+                    </div>
+                    <span class="font-bold text-amber-400">${score} نقطة</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function clearHighScores() {
+            GAMES_DATABASE.forEach(g => localStorage.removeItem(`mahdi_hs_${g.id}`));
+            loadSavedHighScores();
+            renderGamesAppCatalog(GAMES_DATABASE);
+        }
+
+        /* Particles Background */
+        function initParticlesCanvas() {
+            const canvas = document.getElementById('bgCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let particles = Array.from({length: 25}, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 2.5 + 1,
+                dx: (Math.random() - 0.5) * 0.6,
+                dy: (Math.random() - 0.5) * 0.6
+            }));
+
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    p.x += p.dx; p.y += p.dy;
+                    if(p.x < 0 || p.x > canvas.width) p.dx = -p.dx;
+                    if(p.y < 0 || p.y > canvas.height) p.dy = -p.dy;
+                });
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+    </script>
 </body>
 </html>
